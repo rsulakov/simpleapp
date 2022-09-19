@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simpleapp
+  labels:
+    app: simpleapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: simpleapp
+  template:
+    metadata:
+      labels:
+        app: simpleapp
+    spec:
+      containers:
+        - name: simpleapp
+          image: rsulakov/simpleapp:latest
+          ports:
+            - containerPort: 9090
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 9090
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: simpleapp
+  name: simpleapp-svc
+spec:
+  ports:
+    - port: 9090
+      protocol: TCP
+      targetPort: 9090
+  selector:
+    app: simpleapp
+  type: ClusterIP
+status:
+  loadBalancer: {}
